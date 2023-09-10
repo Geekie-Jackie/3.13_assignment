@@ -1,4 +1,3 @@
-// Assignment 3.14
 package com.shopping_cart.shopping_cart.controller;
 
 import java.util.List;
@@ -28,21 +27,15 @@ public class CatalogueController {
     @Autowired
     CatalogueRepository repo; // Added
 
-    // Scenario 3: Database connection is lost
     // Updated (produces = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping(value = "/catalogues", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<List<Catalogue>> list(@RequestParam(defaultValue = "") String search) {
-        try {
-            List<Catalogue> results = repo.findByNameContaining(search);
-            System.out.println("Results Size: " + results.size());
-            if (results.size() == 0) {
-                return ResponseEntity.notFound().build();
-            } else {
-                return ResponseEntity.ok(results);
-            }
-        } catch (Exception e) {
-            // Scenario 3: Database connection is lost
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        List<Catalogue> results = repo.findByNameContaining(search);
+        System.out.println("Results Size: " + results.size());
+        if (results.size() == 0) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(results);
         }
     }
 
@@ -55,12 +48,11 @@ public class CatalogueController {
      * @RequestParam => /catalogues?id=1
      */
     @GetMapping(value = "/catalogues/{id}")
-    public ResponseEntity<?> getCatalogueById(@PathVariable int id) {
+    public ResponseEntity<Optional<Catalogue>> get(@PathVariable int id) {
         Optional<Catalogue> result = (Optional<Catalogue>) repo.findById(id);
         if (result.isPresent())
-            // Scenario 2: Catalogue Id is present
-            return ResponseEntity.ok(result.get());
-        // Scenario 1: Catalogue Id is not found
+            return ResponseEntity.ok(result);
+
         return ResponseEntity.notFound().build();
     }
 
@@ -78,8 +70,7 @@ public class CatalogueController {
             return ResponseEntity.created(null).body(created);
         } catch (Exception e) {
             System.out.println(e);
-            // Scenario 3: Database connection is lost
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.internalServerError().build();
         }
 
     }
